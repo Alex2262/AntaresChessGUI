@@ -1,7 +1,9 @@
 
 import numpy as np
 import os
+import platform
 
+PLATFORM = platform.system()
 FILE_PATH = os.path.dirname(__file__) + "/"
 
 DEFAULT_SCREEN_SIZE = (1000, 540)

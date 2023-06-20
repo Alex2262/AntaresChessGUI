@@ -3,14 +3,10 @@
 Main Driver file.
 """
 import sys
-import os
-import subprocess
-import pygame
 import threading
 import pyperclip
 import re
 
-from constants import *
 from objects import *
 from move import *
 from game_handler import GameState
@@ -31,7 +27,9 @@ def main():
     new_mode = 0
 
     while True:
-        if new_mode == 0:
+        if new_mode == -1:
+            return
+        elif new_mode == 0:
             new_mode = main_menu(screen, main_state)
         elif new_mode == 1:
             new_mode = new_game_menu(screen, main_state)
@@ -71,6 +69,13 @@ def main_menu(screen, main_state):
 
     engine_files = [FILE_PATH + "engines/" + x for x in engine_files]
     engine_file = FILE_PATH + "engines/Altair300_mac_silicon"  # engine_files[0]
+
+    if PLATFORM == "Windows":
+        engine_file = FILE_PATH + "engines/Altair3.0.0_windows_64.exe"
+    elif PLATFORM != "Darwin":
+        print(PLATFORM + " NOT SUPPORTED")
+        return -1
+
     analysis = False
 
     name_panel = RectTextObject(LAYER3_COLOR, (774, 168, 192, 20), 0, 8, "Engine: 0", TEXT_COLOR)
