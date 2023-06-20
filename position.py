@@ -24,12 +24,13 @@ class Position:
         self.side = 0
 
     def parse_fen(self, fen_string):
-        self.reset_position()
 
         fen_list = fen_string.strip().split()
 
         if len(fen_list) < 4:
             return False
+
+        self.reset_position()
 
         fen_board = fen_list[0]
         turn = fen_list[1]

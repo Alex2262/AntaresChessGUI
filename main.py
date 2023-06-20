@@ -258,6 +258,8 @@ def main_menu(screen, main_state):
                                        engine.info["evaluation_type"])
 
         if len(current_moves) == 0:
+            print("PLAYER LOST")
+
             main_state.in_play = False
             running = False
             engine.stop_analysis()
@@ -360,7 +362,6 @@ def new_game_menu(screen, main_state):
                             if len(fen.split()) < 6:
                                 fen += " 1"
 
-                            print(fen)
                             if success:
                                 main_state.fen = fen
 
