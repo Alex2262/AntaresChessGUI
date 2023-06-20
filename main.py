@@ -70,7 +70,7 @@ def main_menu(screen, main_state):
     engine_files = os.listdir(FILE_PATH + "engines/")
 
     engine_files = [FILE_PATH + "engines/" + x for x in engine_files]
-    engine_file = engine_files[1]
+    engine_file = FILE_PATH + "engines/Altair300_mac_silicon"  # engine_files[0]
     analysis = False
 
     name_panel = RectTextObject(LAYER3_COLOR, (774, 168, 192, 20), 0, 8, "Engine: 0", TEXT_COLOR)
