@@ -403,6 +403,8 @@ def configuration_menu(screen, main_state):
 
     clock = pygame.time.Clock()
 
+    notification_object = None
+
     # Menu Game Loop
 
     running = True
@@ -437,7 +439,7 @@ def configuration_menu(screen, main_state):
         screen.fill(SCREEN_COLOR)
 
         selected_object = get_selected_object(mouse_pos, buttons)
-        draw_menu_objects(screen, screen_size, selected_object, basic_objects, buttons)
+        draw_menu_objects(screen, screen_size, selected_object, basic_objects, buttons, notification_object)
 
         clock.tick(60)
         pygame.display.update()
