@@ -46,29 +46,35 @@ def main_menu(screen, main_state):
     mode = 0
 
     buttons = [
-        RectTextButton(BUTTON1_COLOR, (770, 30, 200, 40), 0, 8, "menu:1", 'New Game', BUTTON_TEXT_COLOR),
-        RectTextButton(BUTTON1_COLOR, (770, 80, 200, 40), 0, 8, "menu:2", 'Configure', BUTTON_TEXT_COLOR),
-        RectTextButton(BUTTON1_COLOR, (888, 136, 76, 26), 0, 8, "toggle:analysis", 'Off', BUTTON_TEXT_COLOR)
+        RectTextButton(BUTTON1_COLOR, (770, 30, 200, 40), 0, DEFAULT_RECT_RADIUS, "menu:1", 'New Game',
+                       BUTTON_TEXT_COLOR),
+        RectTextButton(BUTTON1_COLOR, (770, 80, 200, 40), 0, DEFAULT_RECT_RADIUS, "menu:2", 'Configure',
+                       BUTTON_TEXT_COLOR),
+        RectTextButton(BUTTON1_COLOR, (888, 136, 76, 26), 0, DEFAULT_RECT_RADIUS, "toggle:analysis", 'Off',
+                       BUTTON_TEXT_COLOR)
     ]
 
-    eval_bar = EvalBar(LAYER2_COLOR, (20, 20, 40, 500), 0, 8)
+    eval_bar = EvalBar(LAYER2_COLOR, (20, 20, 40, 500), 0, DEFAULT_RECT_RADIUS)
     basic_objects = [
         eval_bar,
-        RectObject(LAYER2_COLOR, (80, 20, 500, 500), 0, 8),
-        RectObject(LAYER2_COLOR, (600, 20, 140, 500), 0, 8),
-        RectObject(LAYER2_COLOR, (760, 20, 220, 500), 0, 8),
-        RectObject(LAYER1_COLOR, (770, 130, 200, 380), 0, 8),
-        RectObject(LAYER3_COLOR, (774, 134, 192, 30), 0, 8),
-        RectTextObject(LAYER3_COLOR, (774, 134, 116, 30), 0, 8, "Analysis: ", TEXT_COLOR)
+        RectObject(LAYER2_COLOR, (80, 20, 500, 500), 0, DEFAULT_RECT_RADIUS),
+        RectObject(LAYER2_COLOR, (600, 20, 140, 500), 0, DEFAULT_RECT_RADIUS),
+        RectObject(LAYER2_COLOR, (760, 20, 220, 500), 0, DEFAULT_RECT_RADIUS),
+        RectObject(LAYER1_COLOR, (770, 130, 200, 380), 0, DEFAULT_RECT_RADIUS),
+        RectObject(LAYER3_COLOR, (774, 134, 192, 30), 0, DEFAULT_RECT_RADIUS),
+        RectTextObject(LAYER3_COLOR, (774, 134, 116, 30), 0, DEFAULT_RECT_RADIUS, "Analysis: ", TEXT_COLOR)
     ]
 
     board_gui = Board(CHESS_BOARD_COLOR, (STARTING_SQ[0], STARTING_SQ[1], 480, 480))
 
     # Engine
+    engine_side = BLACK_COLOR
+    engine_play = False
+
     engine_files = os.listdir(FILE_PATH + "engines/")
 
     engine_files = [FILE_PATH + "engines/" + x for x in engine_files]
-    engine_file = FILE_PATH + "engines/Altair300_mac_silicon"  # engine_files[0]
+    engine_file = FILE_PATH + "engines/Altair523"  # engine_files[0]
 
     if PLATFORM == "Windows":
         engine_file = FILE_PATH + "engines/Altair3.0.0_windows_64.exe"
@@ -78,12 +84,12 @@ def main_menu(screen, main_state):
 
     analysis = False
 
-    name_panel = RectTextObject(LAYER3_COLOR, (774, 168, 192, 20), 0, 8, "Engine: 0", TEXT_COLOR)
-    author_panel = RectTextObject(LAYER3_COLOR, (774, 192, 192, 20), 0, 8, "Author: 0", TEXT_COLOR)
-    depth_panel = RectTextObject(LAYER3_COLOR, (774, 216, 192, 20), 0, 8, "Depth: 0", TEXT_COLOR)
-    score_panel = RectTextObject(LAYER3_COLOR, (774, 240, 192, 20), 0, 8, "Score: 0", TEXT_COLOR)
-    nodes_panel = RectTextObject(LAYER3_COLOR, (774, 264, 192, 20), 0, 8, "Nodes: 0", TEXT_COLOR)
-    pv_panel = RectTextObject(LAYER3_COLOR, (774, 288, 192, 20), 0, 8, "PV: ", TEXT_COLOR)
+    name_panel = RectTextObject(LAYER3_COLOR, (774, 168, 192, 20), 0, DEFAULT_RECT_RADIUS, "Engine: 0", TEXT_COLOR)
+    author_panel = RectTextObject(LAYER3_COLOR, (774, 192, 192, 20), 0, DEFAULT_RECT_RADIUS, "Author: 0", TEXT_COLOR)
+    depth_panel = RectTextObject(LAYER3_COLOR, (774, 216, 192, 20), 0, DEFAULT_RECT_RADIUS, "Depth: 0", TEXT_COLOR)
+    score_panel = RectTextObject(LAYER3_COLOR, (774, 240, 192, 20), 0, DEFAULT_RECT_RADIUS, "Score: 0", TEXT_COLOR)
+    nodes_panel = RectTextObject(LAYER3_COLOR, (774, 264, 192, 20), 0, DEFAULT_RECT_RADIUS, "Nodes: 0", TEXT_COLOR)
+    pv_panel = RectTextObject(LAYER3_COLOR, (774, 288, 192, 20), 0, DEFAULT_RECT_RADIUS, "PV: ", TEXT_COLOR)
 
     basic_objects.append(name_panel)
     basic_objects.append(author_panel)
@@ -98,17 +104,22 @@ def main_menu(screen, main_state):
     # Chess
     current_moves = main_state.position.get_legal_moves()
 
-    white_clock = Clock(LAYER1_COLOR, (610, 470, 120, 40), 0, 8, '00:00', TEXT_COLOR)
-    black_clock = Clock(LAYER1_COLOR, (610, 30, 120, 40), 0, 8, '00:00', TEXT_COLOR)
+    white_clock = Clock(LAYER1_COLOR, (610, 470, 120, 40), 0, DEFAULT_RECT_RADIUS, '00:00', TEXT_COLOR)
+    black_clock = Clock(LAYER1_COLOR, (610, 30, 120, 40), 0, DEFAULT_RECT_RADIUS, '00:00', TEXT_COLOR)
 
-    promotions_panel = RectObject(LAYER1_COLOR, (610, 300, 120, 160), 0, 8)
-    promotions_title = RectTextObject(LAYER3_COLOR, (612, 302, 116, 38), 0, 8, "Promotion:", TEXT_COLOR)
+    promotions_panel = RectObject(LAYER1_COLOR, (610, 300, 120, 160), 0, DEFAULT_RECT_RADIUS)
+    promotions_title = RectTextObject(LAYER3_COLOR, (612, 302, 116, 38), 0, DEFAULT_RECT_RADIUS, "Promotion:",
+                                      TEXT_COLOR)
 
     promotions_buttons = [
-        PromotionButton(BUTTON1_COLOR, (612, 342, 56, 56), 0, 8, "promotion_piece:1", "n", main_state.piece_images),
-        PromotionButton(BUTTON1_COLOR, (671, 342, 56, 56), 0, 8, "promotion_piece:2", "b", main_state.piece_images),
-        PromotionButton(BUTTON1_COLOR, (612, 401, 56, 56), 0, 8, "promotion_piece:3", "r", main_state.piece_images),
-        PromotionButton(BUTTON1_COLOR, (671, 401, 56, 56), 0, 8, "promotion_piece:4", "q", main_state.piece_images),
+        PromotionButton(BUTTON1_COLOR, (612, 342, 56, 56), 0, DEFAULT_RECT_RADIUS, "promotion_piece:1", "n",
+                        main_state.piece_images),
+        PromotionButton(BUTTON1_COLOR, (671, 342, 56, 56), 0, DEFAULT_RECT_RADIUS, "promotion_piece:2", "b",
+                        main_state.piece_images),
+        PromotionButton(BUTTON1_COLOR, (612, 401, 56, 56), 0, DEFAULT_RECT_RADIUS, "promotion_piece:3", "r",
+                        main_state.piece_images),
+        PromotionButton(BUTTON1_COLOR, (671, 401, 56, 56), 0, DEFAULT_RECT_RADIUS, "promotion_piece:4", "q",
+                        main_state.piece_images),
     ]
 
     promotion_piece = 4
@@ -147,7 +158,7 @@ def main_menu(screen, main_state):
 
             if event.type == pygame.QUIT:
                 running = False
-                engine.stop_analysis()
+                engine.stop()
 
             if event.type == pygame.VIDEORESIZE:
                 # screen = pygame.display.set_mode((event.w, event.h), pygame.RESIZABLE)
@@ -168,8 +179,11 @@ def main_menu(screen, main_state):
                                                    promotion_piece, sprite_group)
 
                             if attempt and analysis:
-                                engine.stop_analysis()
+                                engine.stop()
                                 engine.start_analysis()
+
+                            if attempt and engine_play and main_state.position.side == engine_side:
+                                engine.think(5000)
 
                             released = True
 
@@ -184,8 +198,11 @@ def main_menu(screen, main_state):
                                                promotion_piece, sprite_group)
 
                         if attempt and analysis:
-                            engine.stop_analysis()
+                            engine.stop()
                             engine.start_analysis()
+
+                        if attempt and engine_play and main_state.position.side == engine_side:
+                            engine.think(5000)
 
                         released = True
 
@@ -197,7 +214,7 @@ def main_menu(screen, main_state):
                     action = selected_object.get_action().split(":")
 
                     if action[0] == "menu":
-                        engine.stop_analysis()
+                        engine.stop()
                         mode = int(action[1])
                         return mode
 
@@ -218,7 +235,7 @@ def main_menu(screen, main_state):
                             else:
                                 selected_object.text = "Off"
 
-                                engine.stop_analysis()
+                                engine.stop()
                                 if engine_connection_thread is not None:
                                     engine_connection_thread.join()
 
@@ -233,36 +250,37 @@ def main_menu(screen, main_state):
 
                 engine.start_analysis()
 
-            name_panel.text = "Engine: " + str(engine.info["name"])
-            author_panel.text = "Author: " + str(engine.info["author"])
-            depth_panel.text = "Depth: " + str(engine.info["depth"])
+            if engine.info["depth"] >= 1:
+                name_panel.text = "Engine: " + str(engine.info["name"])
+                author_panel.text = "Author: " + str(engine.info["author"])
+                depth_panel.text = "Depth: " + str(engine.info["depth"])
 
-            score_info = engine.info["evaluation"] * (-1 if main_state.position.side == 1 else 1)
-            if engine.info["evaluation_type"] == "cp":
-                score_info = str(score_info / 100.0)
-            else:
-                score_info = ("M" if score_info >= 0 else "-M") + str(abs(score_info))
+                score_info = engine.info["evaluation"] * (-1 if main_state.position.side == 1 else 1)
+                if engine.info["evaluation_type"] == "cp":
+                    score_info = str(score_info / 100.0)
+                else:
+                    score_info = ("M" if score_info >= 0 else "-M") + str(abs(score_info))
 
-            score_panel.text = "Score: " + score_info
-            nodes_panel.text = "Nodes: " + str(engine.info["nodes"])
-            pv_panel.text = "PV: " + engine.info["pv"]
+                score_panel.text = "Score: " + score_info
+                nodes_panel.text = "Nodes: " + str(engine.info["nodes"])
+                pv_panel.text = "PV: " + " ".join(engine.info["pv"].split()[:4])
 
-            name_panel.update_text()
-            author_panel.update_text()
-            depth_panel.update_text()
-            score_panel.update_text()
-            nodes_panel.update_text()
-            pv_panel.update_text()
+                name_panel.update_text()
+                author_panel.update_text()
+                depth_panel.update_text()
+                score_panel.update_text()
+                nodes_panel.update_text()
+                pv_panel.update_text()
 
-            eval_bar.update_evaluation(engine.info["evaluation"] * (-1 if main_state.position.side == 1 else 1),
-                                       engine.info["evaluation_type"])
+                eval_bar.update_evaluation(engine.info["evaluation"] * (-1 if main_state.position.side == 1 else 1),
+                                           engine.info["evaluation_type"])
 
         if len(current_moves) == 0:
             print("PLAYER LOST")
 
             main_state.in_play = False
             running = False
-            engine.stop_analysis()
+            engine.stop()
 
         if selected_piece is not None and not released:
             selected_piece.rect.center = mouse_pos
@@ -289,6 +307,11 @@ def main_menu(screen, main_state):
 
         draw_legal_moves(screen, selected_piece, current_moves)
 
+        if analysis and len(engine.info["pv"]) >= 1:
+            best_move = engine.info["pv"].split()[0].strip()
+            draw_analysis_moves(screen, board_gui,
+                                [get_move_from_uci(main_state.position, best_move)])
+
         clock.tick(60)
         pygame.display.update()
 
@@ -304,14 +327,16 @@ def new_game_menu(screen, main_state):
     screen_size = screen.get_size()
 
     buttons = [
-        RectTextButton(BUTTON1_COLOR, (770, 30, 200, 40), 0, 8, "menu:0", 'Exit', BUTTON_TEXT_COLOR),
-        RectTextButton(BUTTON1_COLOR, (770, 80, 200, 40), 0, 8, "import:fen", 'Import Fen', BUTTON_TEXT_COLOR),
-        RectTextButton(BUTTON1_COLOR, (770, 130, 200, 40), 0, 8, "import:pgn", 'Import PGN', BUTTON_TEXT_COLOR),
+        RectTextButton(BUTTON1_COLOR, (770, 30, 200, 40), 0, DEFAULT_RECT_RADIUS, "menu:0", 'Exit', BUTTON_TEXT_COLOR),
+        RectTextButton(BUTTON1_COLOR, (770, 80, 200, 40), 0, DEFAULT_RECT_RADIUS, "import:fen", 'Import Fen',
+                       BUTTON_TEXT_COLOR),
+        RectTextButton(BUTTON1_COLOR, (770, 130, 200, 40), 0, DEFAULT_RECT_RADIUS, "import:pgn", 'Import PGN',
+                       BUTTON_TEXT_COLOR),
     ]
 
     basic_objects = [
-        RectObject(LAYER2_COLOR, (20, 20, 720, 500), 0, 8),
-        RectObject(LAYER2_COLOR, (760, 20, 220, 500), 0, 8)
+        RectObject(LAYER2_COLOR, (20, 20, 720, 500), 0, DEFAULT_RECT_RADIUS),
+        RectObject(LAYER2_COLOR, (760, 20, 220, 500), 0, DEFAULT_RECT_RADIUS)
     ]
 
     scale_objects(screen_size, basic_objects, buttons)
@@ -364,10 +389,11 @@ def new_game_menu(screen, main_state):
 
                             if success:
                                 main_state.fen = fen
+                                main_state.move_archive.clear()
 
                             text = "Fen Successfully Imported" if success else "Fen Import Failed"
                             notification_object = NotificationMessage(LAYER4_COLOR, (400, 50, 200, 50),
-                                                                     text, TEXT_COLOR)
+                                                                      text, TEXT_COLOR)
 
         mouse_pos = pygame.mouse.get_pos()
 
@@ -391,12 +417,12 @@ def configuration_menu(screen, main_state):
     screen_size = screen.get_size()
 
     buttons = [
-        RectTextButton(BUTTON1_COLOR, (780, 200, 180, 40), 0, 8, "menu:0", 'Exit', BUTTON_TEXT_COLOR)
+        RectTextButton(BUTTON1_COLOR, (780, 200, 180, 40), 0, DEFAULT_RECT_RADIUS, "menu:0", 'Exit', BUTTON_TEXT_COLOR)
     ]
 
     basic_objects = [
-        RectObject(LAYER2_COLOR, (20, 20, 720, 500), 0, 8),
-        RectObject(LAYER2_COLOR, (760, 20, 220, 500), 0, 8)
+        RectObject(LAYER2_COLOR, (20, 20, 720, 500), 0, DEFAULT_RECT_RADIUS),
+        RectObject(LAYER2_COLOR, (760, 20, 220, 500), 0, DEFAULT_RECT_RADIUS)
     ]
 
     scale_objects(screen_size, basic_objects, buttons)
@@ -602,6 +628,28 @@ def draw_legal_moves(screen, selected_piece, legal_moves):
              selected_piece.width / 5)
 
         screen.blit(dot_surface, (0, 0))
+
+
+def draw_arrow(screen, start, end, color, thickness):
+    pygame.draw.line(screen, color, start, end, thickness)
+
+
+def draw_analysis_moves(screen, board, analysis_moves):
+    new_surface = pygame.Surface((screen.get_width(), screen.get_height()), pygame.SRCALPHA)
+    for move in analysis_moves:
+        origin_square = MAILBOX_TO_STANDARD[get_from_square(move)]
+        target_square = MAILBOX_TO_STANDARD[get_to_square(move)]
+
+        origin = (board.x + (origin_square % 8) * board.sq_size + board.sq_size // 2,
+                  board.y + (origin_square // 8) * board.sq_size + board.sq_size // 2)
+        target = (board.x + (target_square % 8) * board.sq_size + board.sq_size // 2,
+                  board.y + (target_square // 8) * board.sq_size + board.sq_size // 2)
+
+        draw_arrow(new_surface, origin, target, (168, 52, 235, 40), board.sq_size // 5)
+
+    screen.blit(new_surface, (0, 0))
+
+
 
 
 if __name__ == "__main__":

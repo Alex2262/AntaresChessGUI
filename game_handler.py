@@ -41,8 +41,6 @@ class GameState:
     def initialize_pieces(self):
         self.pieces = []
 
-        self.position.parse_fen(self.fen)
-
         for i in range(64):
 
             pos = STANDARD_TO_MAILBOX[i]

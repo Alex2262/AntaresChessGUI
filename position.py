@@ -102,6 +102,62 @@ class Position:
 
         return True
 
+    def get_fen(self):
+        fen = ""
+        empty = 0
+        for pos in STANDARD_TO_MAILBOX:
+            i = MAILBOX_TO_STANDARD[pos]
+
+            if i % 8 == 0 and i != 0:
+                if empty:
+                    fen += str(empty)
+                    empty = 0
+                fen += '/'
+
+            piece = self.board[pos]
+
+            if piece == EMPTY:
+                empty += 1
+                continue
+
+            if empty:
+                fen += str(empty)
+                empty = 0
+
+            new_piece = PIECE_MATCHER[piece % 6]
+            if piece >= BLACK_PAWN:
+                new_piece = new_piece.lower()
+
+            fen += new_piece
+
+        if empty:
+            fen += str(empty)
+
+        fen += " " + ("w" if self.side == WHITE_COLOR else "b") + " "
+
+        if self.castle_ability_bits == 0:
+            fen += "-"
+        else:
+            if (self.castle_ability_bits & 1) == 1:
+                fen += "K"
+            if (self.castle_ability_bits & 2) == 2:
+                fen += "Q"
+            if (self.castle_ability_bits & 4) == 4:
+                fen += "k"
+            if (self.castle_ability_bits & 8) == 8:
+                fen += "q"
+
+        fen += " "
+
+        if self.ep_square == 0:
+            fen += "-"
+        else:
+            standard_ep_square = MAILBOX_TO_STANDARD[self.ep_square]
+            num_ep_pos = [standard_ep_square // 8, standard_ep_square % 8]
+            fen += chr(num_ep_pos[1] + 97) + str(8 - num_ep_pos[0])
+
+        return fen
+
     def get_pseudo_legal_moves(self):
         moves = []
 
