@@ -637,35 +637,40 @@ def draw_arrow(screen, start, end, color, thickness, sq_size):
     y_length = end[1] - start[1]
     x_length = end[0] - start[0]
 
-    squares = int(max(abs(y_length) / sq_size, abs(x_length) / sq_size) + 0.5)
+    length_ratio = math.sqrt(x_length ** 2 + y_length ** 2) / sq_size
 
     error = 1000000
     line_slope = error if x_length == 0 else y_length / x_length
     perpendicular = error if line_slope == 0 else -(1 / line_slope)
 
-    triangle_ratio = 0.5
-    side_ratio = triangle_ratio * (2 ** 0.5) / 2 / squares
+    triangle_ratio = 0.3
 
-    triangle_side_x = sq_size * triangle_ratio / 2
-    triangle_side_y = triangle_side_x
+    # Ensure nice looking triangle proportional
+    side_ratio = triangle_ratio * (2 ** 0.5) / length_ratio
 
-    if perpendicular == error:
-        triangle_side_x = 0
-    elif line_slope == error:
-        triangle_side_y = 0
-    else:
-        triangle_side_y *= perpendicular
+    optimal_size = sq_size * triangle_ratio
 
+    # Calculate the intersection of a line (y = mx) and circle (x^2 + y^2 = optimal_size)
+    # where center is assumed at (0, 0) for simplicity of calculations
+    triangle_side_x = optimal_size if line_slope == error else math.sqrt(
+        abs((optimal_size ** 2) / (perpendicular ** 2 + 1))
+    )
+
+    # Get the Y length based on X length
+    triangle_side_y = optimal_size if perpendicular == error else triangle_side_x * perpendicular
+
+    # Calculate the point which will be the midpoint of the base of the triangle
     point = (end[0] - int(end[0] - start[0]) * side_ratio,
              end[1] - int(end[1] - start[1]) * side_ratio)
 
     triangle = (end,
+
+                # Vertices from midpoint of the base of the triangle
                 (point[0] + triangle_side_x, point[1] + triangle_side_y),
                 (point[0] - triangle_side_x, point[1] - triangle_side_y))
 
-    pygame.draw.line(screen, color, start, point, thickness)
-
-    pygame.draw.polygon(screen, color, triangle, 0)
+    pygame.draw.line(screen, color, start, point, thickness)  # Draw line
+    pygame.draw.polygon(screen, color, triangle, 0)  # Draw triangle
 
 
 def draw_analysis_moves(screen, board, analysis_moves):
