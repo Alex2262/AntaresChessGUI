@@ -52,7 +52,7 @@ class RectTextObject(RectObject):
         self.text_color = text_color
 
         self.font = pygame.font.Font('Quicksand-Regular_afda0c4733e67d13c4b46e7985d6a9ce.ttf',
-                                     int(min(self.width / (len(self.text) / 2), self.height) * 3 / 5))
+                                     int(min(self.width / (len(self.text) / 2), self.height) * 0.7))
 
         self.text_surf = self.font.render(self.text, True, self.text_color)
 
@@ -63,7 +63,7 @@ class RectTextObject(RectObject):
         super().scale(screen_size)
 
         self.font = pygame.font.Font('Quicksand-Regular_afda0c4733e67d13c4b46e7985d6a9ce.ttf',
-                                     int(min(self.width / (len(self.text) / 2), self.height) * 3 / 5))
+                                     int(min(self.width / (len(self.text) / 2), self.height) * 0.7))
         self.text_surf = self.font.render(self.text, True, self.text_color)
 
     def draw(self, surface, selected):

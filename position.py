@@ -25,82 +25,87 @@ class Position:
 
     def parse_fen(self, fen_string):
 
-        fen_list = fen_string.strip().split()
+        try:
+            fen_list = fen_string.strip().split()
 
-        if len(fen_list) < 4:
-            return False
+            if len(fen_list) < 4:
+                return False
 
-        self.reset_position()
+            self.reset_position()
 
-        fen_board = fen_list[0]
-        turn = fen_list[1]
+            fen_board = fen_list[0]
+            turn = fen_list[1]
 
-        # -- boundaries for 12x10 mailbox --
-        pos = 21
-        for i in range(21):
-            self.board[i] = PADDING
+            # -- boundaries for 12x10 mailbox --
+            pos = 21
+            for i in range(21):
+                self.board[i] = PADDING
 
-        # -- parse board --
-        for i in fen_board:
-            if i == "/":
-                self.board[pos] = PADDING
-                self.board[pos + 1] = PADDING
-                pos += 2
-            elif i.isdigit():
-                for j in range(ord(i) - 48):
-                    self.board[pos] = EMPTY
+            # -- parse board --
+            for i in fen_board:
+                if i == "/":
+                    self.board[pos] = PADDING
+                    self.board[pos + 1] = PADDING
+                    pos += 2
+                elif i.isdigit():
+                    for j in range(ord(i) - 48):
+                        self.board[pos] = EMPTY
+                        pos += 1
+                elif i.isalpha():
+                    idx = 0
+                    if i.islower():
+                        idx = 6
+                    piece = i.upper()
+                    for j, p in enumerate(PIECE_MATCHER):
+                        if piece == p:
+                            idx += j
+                    self.board[pos] = idx
+
+                    if idx < BLACK_PAWN:
+                        self.white_pieces.append(pos)
+                    else:
+                        self.black_pieces.append(pos)
+
+                    if i == 'K':
+                        self.king_positions[0] = pos
+                    elif i == 'k':
+                        self.king_positions[1] = pos
                     pos += 1
-            elif i.isalpha():
-                idx = 0
-                if i.islower():
-                    idx = 6
-                piece = i.upper()
-                for j, p in enumerate(PIECE_MATCHER):
-                    if piece == p:
-                        idx += j
-                self.board[pos] = idx
 
-                if idx < BLACK_PAWN:
-                    self.white_pieces.append(pos)
-                else:
-                    self.black_pieces.append(pos)
+            # -- boundaries for 12x10 mailbox --
+            for i in range(21):
+                self.board[pos + i] = PADDING
 
-                if i == 'K':
-                    self.king_positions[0] = pos
-                elif i == 'k':
-                    self.king_positions[1] = pos
-                pos += 1
+            self.castle_ability_bits = 0
+            for i in fen_list[2]:
+                if i == "K":
+                    self.castle_ability_bits |= 1
+                elif i == "Q":
+                    self.castle_ability_bits |= 2
+                elif i == "k":
+                    self.castle_ability_bits |= 4
+                elif i == "q":
+                    self.castle_ability_bits |= 8
 
-        # -- boundaries for 12x10 mailbox --
-        for i in range(21):
-            self.board[pos + i] = PADDING
+            # -- en passant square --
+            if len(fen_list[3]) > 1:
+                square = [8 - (ord(fen_list[3][1]) - 48), ord(fen_list[3][0]) - 97]
 
-        self.castle_ability_bits = 0
-        for i in fen_list[2]:
-            if i == "K":
-                self.castle_ability_bits |= 1
-            elif i == "Q":
-                self.castle_ability_bits |= 2
-            elif i == "k":
-                self.castle_ability_bits |= 4
-            elif i == "q":
-                self.castle_ability_bits |= 8
+                square = square[0] * 8 + square[1]
 
-        # -- en passant square --
-        if len(fen_list[3]) > 1:
-            square = [8 - (ord(fen_list[3][1]) - 48), ord(fen_list[3][0]) - 97]
+                self.ep_square = STANDARD_TO_MAILBOX[square]
+            else:
+                self.ep_square = 0
 
-            square = square[0] * 8 + square[1]
+            self.side = 0
+            if turn == "b":
+                self.side = 1
 
-            self.ep_square = STANDARD_TO_MAILBOX[square]
-        else:
-            self.ep_square = 0
+            return True
 
-        self.side = 0
-        if turn == "b":
-            self.side = 1
-
-        return True
+        except:
+            print("Fen Parsing Error")
+            return False
 
     def get_fen(self):
         fen = ""

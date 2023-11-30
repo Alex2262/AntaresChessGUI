@@ -4,6 +4,8 @@ Main Driver file.
 """
 import sys
 import threading
+
+import math
 import pyperclip
 import re
 
@@ -32,9 +34,9 @@ def main():
         elif new_mode == 0:
             new_mode = main_menu(screen, main_state)
         elif new_mode == 1:
-            new_mode = new_game_menu(screen, main_state)
+            new_mode = game_options_menu(screen, main_state)
         elif new_mode == 2:
-            new_mode = configuration_menu(screen, main_state)
+            new_mode = engine_options_menu(screen, main_state)
 
 
 def main_menu(screen, main_state):
@@ -46,9 +48,9 @@ def main_menu(screen, main_state):
     mode = 0
 
     buttons = [
-        RectTextButton(BUTTON1_COLOR, (770, 30, 200, 40), 0, DEFAULT_RECT_RADIUS, "menu:1", 'New Game',
+        RectTextButton(BUTTON1_COLOR, (770, 30, 200, 40), 0, DEFAULT_RECT_RADIUS, "menu:1", 'Game Options',
                        BUTTON_TEXT_COLOR),
-        RectTextButton(BUTTON1_COLOR, (770, 80, 200, 40), 0, DEFAULT_RECT_RADIUS, "menu:2", 'Configure',
+        RectTextButton(BUTTON1_COLOR, (770, 80, 200, 40), 0, DEFAULT_RECT_RADIUS, "menu:2", 'Engine Options',
                        BUTTON_TEXT_COLOR),
         RectTextButton(BUTTON1_COLOR, (888, 136, 76, 26), 0, DEFAULT_RECT_RADIUS, "toggle:analysis", 'Off',
                        BUTTON_TEXT_COLOR)
@@ -320,7 +322,7 @@ def main_menu(screen, main_state):
     sys.exit()
 
 
-def new_game_menu(screen, main_state):
+def game_options_menu(screen, main_state):
 
     # Important Variables
 
@@ -410,7 +412,7 @@ def new_game_menu(screen, main_state):
     sys.exit()
 
 
-def configuration_menu(screen, main_state):
+def engine_options_menu(screen, main_state):
 
     # Important Variables
 
@@ -630,8 +632,40 @@ def draw_legal_moves(screen, selected_piece, legal_moves):
         screen.blit(dot_surface, (0, 0))
 
 
-def draw_arrow(screen, start, end, color, thickness):
-    pygame.draw.line(screen, color, start, end, thickness)
+def draw_arrow(screen, start, end, color, thickness, sq_size):
+
+    y_length = end[1] - start[1]
+    x_length = end[0] - start[0]
+
+    squares = int(max(abs(y_length) / sq_size, abs(x_length) / sq_size) + 0.5)
+
+    error = 1000000
+    line_slope = error if x_length == 0 else y_length / x_length
+    perpendicular = error if line_slope == 0 else -(1 / line_slope)
+
+    triangle_ratio = 0.5
+    side_ratio = triangle_ratio * (2 ** 0.5) / 2 / squares
+
+    triangle_side_x = sq_size * triangle_ratio / 2
+    triangle_side_y = triangle_side_x
+
+    if perpendicular == error:
+        triangle_side_x = 0
+    elif line_slope == error:
+        triangle_side_y = 0
+    else:
+        triangle_side_y *= perpendicular
+
+    point = (end[0] - int(end[0] - start[0]) * side_ratio,
+             end[1] - int(end[1] - start[1]) * side_ratio)
+
+    triangle = (end,
+                (point[0] + triangle_side_x, point[1] + triangle_side_y),
+                (point[0] - triangle_side_x, point[1] - triangle_side_y))
+
+    pygame.draw.line(screen, color, start, point, thickness)
+
+    pygame.draw.polygon(screen, color, triangle, 0)
 
 
 def draw_analysis_moves(screen, board, analysis_moves):
@@ -645,7 +679,7 @@ def draw_analysis_moves(screen, board, analysis_moves):
         target = (board.x + (target_square % 8) * board.sq_size + board.sq_size // 2,
                   board.y + (target_square // 8) * board.sq_size + board.sq_size // 2)
 
-        draw_arrow(new_surface, origin, target, (168, 52, 235, 40), board.sq_size // 5)
+        draw_arrow(new_surface, origin, target, (168, 52, 235, 40), board.sq_size // 5, board.sq_size)
 
     screen.blit(new_surface, (0, 0))
 
