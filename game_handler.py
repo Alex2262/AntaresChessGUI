@@ -4,6 +4,7 @@ import pygame
 from constants import *
 from position import Position
 from objects import Piece
+from move import get_uci_from_move
 
 
 class GameState:
@@ -12,6 +13,7 @@ class GameState:
         self.pieces = []
         self.piece_images = []
         self.fen = START_FEN
+        self.perspective = WHITE_COLOR
 
         self.in_play = True
 
@@ -56,6 +58,12 @@ class GameState:
                                         PIECE_MATCHER[self.position.board[pos] % 6].lower(),
                                         self.piece_images))
 
+                self.pieces[-1].perspective = self.perspective
+
+    def set_perspectives(self):
+        for piece in self.pieces:
+            piece.set_perspective(self.perspective)
+
     def get_piece(self, col, row):
         for piece in self.pieces:
             if piece.col == col and piece.row == row:
@@ -77,9 +85,18 @@ class GameState:
             print("INVALID LAST MOVE")
             return
 
-        self.position.undo_move(self.move_archive[-1], self.old_ep_square, self.old_castle_ability_bits)
-        self.position.side ^= 1
+        move = self.move_archive[-1]
+        print("UNDO: " + get_uci_from_move(move))
 
-        self.old_ep_square = 0
-        self.old_castle_ability_bits = 0
         self.move_archive.pop(-1)
+        self.position.parse_fen(self.fen)
+
+        for move in self.move_archive:
+            self.position.make_move(move)
+            self.position.side ^= 1
+
+        # self.position.undo_move(self.move_archive[-1], self.old_ep_square, self.old_castle_ability_bits)
+        # self.old_ep_square = 0
+        # self.old_castle_ability_bits = 0
+
+        self.initialize_pieces()

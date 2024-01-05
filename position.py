@@ -88,6 +88,7 @@ class Position:
                     self.castle_ability_bits |= 8
 
             # -- en passant square --
+            self.ep_square = 0
             if len(fen_list[3]) > 1:
                 square = [8 - (ord(fen_list[3][1]) - 48), ord(fen_list[3][0]) - 97]
 

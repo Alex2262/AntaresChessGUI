@@ -4,36 +4,33 @@ from constants import *
 
 
 class Object:
-    def __init__(self, rect):
+    def __init__(self, rect, square):
         self.x = rect[0]
         self.y = rect[1]
         self.width = rect[2]
         self.height = rect[3]
+        self.square = square
 
-        self.ratios = (DEFAULT_SCREEN_SIZE[0] / self.x, DEFAULT_SCREEN_SIZE[1] / self.y,
+        self.ratios = (0 if self.x == 0 else DEFAULT_SCREEN_SIZE[0] / self.x,
+                       0 if self.y == 0 else DEFAULT_SCREEN_SIZE[1] / self.y,
                        DEFAULT_SCREEN_SIZE[0] / self.width, DEFAULT_SCREEN_SIZE[1] / self.height)
 
     def scale(self, screen_size):
-        self.x = screen_size[0] / self.ratios[0]
-        self.y = screen_size[1] / self.ratios[1]
-        self.width = screen_size[0] / self.ratios[2]
-        self.height = screen_size[1] / self.ratios[3]
-
-
-class SquareObject(Object):
-    def __init__(self, rect):
-        super().__init__(rect)
-
-    def scale(self, screen_size):
-        self.width = min(screen_size[0] / self.ratios[2], screen_size[1] / self.ratios[3])
-        self.height = min(screen_size[0] / self.ratios[2], screen_size[1] / self.ratios[3])
-        self.x = screen_size[0] / self.ratios[0] + (screen_size[0] / self.ratios[2] - self.width) / 2
-        self.y = screen_size[1] / self.ratios[1] + (screen_size[1] / self.ratios[3] - self.height) / 2
+        if self.square:
+            self.width = min(screen_size[0] / self.ratios[2], screen_size[1] / self.ratios[3])
+            self.height = min(screen_size[0] / self.ratios[2], screen_size[1] / self.ratios[3])
+            self.x = screen_size[0] / self.ratios[0] + (screen_size[0] / self.ratios[2] - self.width) / 2
+            self.y = screen_size[1] / self.ratios[1] + (screen_size[1] / self.ratios[3] - self.height) / 2
+        else:
+            self.x = 0 if self.ratios[0] == 0 else screen_size[0] / self.ratios[0]
+            self.y = 0 if self.ratios[1] == 0 else screen_size[1] / self.ratios[1]
+            self.width = screen_size[0] / self.ratios[2]
+            self.height = screen_size[1] / self.ratios[3]
 
 
 class RectObject(Object):
-    def __init__(self, color, rect, border, radius):
-        super().__init__(rect)
+    def __init__(self, color, rect, square, border, radius):
+        super().__init__(rect, square)
         self.color = color
 
         self.border = border
@@ -45,8 +42,8 @@ class RectObject(Object):
 
 
 class RectTextObject(RectObject):
-    def __init__(self, color, rect, border, radius, text='', text_color=(0, 0, 0)):
-        super().__init__(color, rect, border, radius)
+    def __init__(self, color, rect, square, border, radius, text='', text_color=(0, 0, 0)):
+        super().__init__(color, rect, square, border, radius)
 
         self.text = text
         self.text_color = text_color
@@ -72,10 +69,78 @@ class RectTextObject(RectObject):
                                       self.y + (self.height / 2 - self.text_surf.get_height() / 2)))
 
 
-class RectTextButton(RectTextObject):
-    def __init__(self, color, rect, border, radius, action, text='', text_color=(0, 0, 0)):
+class PVPanel(RectTextObject):
+    def __init__(self, color, color2, rect, border, radius, text_color, line_height):
+        super().__init__(color, rect, False, border, radius, " ", text_color)
+        self.color2 = color2
 
-        super().__init__(color, rect, border, radius, text, text_color)
+        self.line_height = line_height
+        self.line_height_ratio = self.line_height / self.height
+
+        self.font = pygame.font.Font('Quicksand-Regular_afda0c4733e67d13c4b46e7985d6a9ce.ttf',
+                                     int(self.line_height * 0.5))
+
+        self.text_surfaces = [self.font.render(" ", True, self.text_color)]
+        self.multi_pv = 1
+        self.pvs = [""]
+        self.scores = [0]
+        self.score_types = [""]
+        self.side = 0
+
+    def update_pvs(self, engine, side):
+        self.multi_pv    = engine.options["multi_pv"]
+        self.scores      = engine.info["scores"]
+        self.score_types = engine.info["score_types"]
+        self.pvs         = engine.info["pvs"]
+        self.side        = side
+
+        self.text_surfaces = [self.text_surfaces[0]] * self.multi_pv
+
+    def update_text(self):
+        for pv_index in range(self.multi_pv):
+            score_info = self.scores[pv_index] * (-1 if self.side == 1 else 1)
+            if self.score_types[pv_index] == "cp":
+                score_info = str(score_info / 100.0)
+            else:
+                score_info = ("M" if score_info >= 0 else "-M") + str(abs(score_info))
+
+            x_padding  = self.width // 40
+            font_width = int(self.line_height * 0.5) * 0.6
+            pv_slice   = int(((self.width - 2 * x_padding) / font_width / 4) - 1)
+            pv_text    = score_info + " " + " ".join(self.pvs[pv_index].split()[:pv_slice])
+
+            self.text_surfaces[pv_index] = self.font.render(pv_text, True, self.text_color)
+
+    def scale(self, screen_size):
+        super().scale(screen_size)
+        self.line_height = self.line_height_ratio * self.height
+
+        self.font = pygame.font.Font('Quicksand-Regular_afda0c4733e67d13c4b46e7985d6a9ce.ttf',
+                                     int(self.line_height * 0.5))
+
+        self.update_text()
+
+    def draw(self, surface, selected):
+        pygame.draw.rect(surface, self.color,
+                         (self.x, self.y, self.width, self.height), self.border, self.radius)
+
+        x_padding = self.width // 40
+        y_padding = self.height // 40
+
+        for pv_index in range(self.multi_pv):
+            pygame.draw.rect(surface, self.color2,
+                             (self.x + x_padding, self.y + pv_index * self.line_height + y_padding,
+                              self.width - 2 * x_padding, self.line_height - 2 * y_padding),
+                             self.border, self.radius)
+
+            surface.blit(self.text_surfaces[pv_index],
+                         (self.x + 2 * x_padding, self.y + pv_index * self.line_height + y_padding))
+
+
+class RectTextButton(RectTextObject):
+    def __init__(self, color, rect, square, border, radius, action, text='', text_color=(0, 0, 0)):
+
+        super().__init__(color, rect, square, border, radius, text, text_color)
 
         self.action = action
 
@@ -111,8 +176,8 @@ class RectTextButton(RectTextObject):
 # A general class for Image Button Objects
 class ImageButton(RectTextButton):
     # e.g. sell button. Buttons with images
-    def __init__(self, color, rect, border, radius, action, image_file, text=' ', text_color=(0, 0, 0)):
-        super().__init__(color, rect, border, radius, action, text, text_color)
+    def __init__(self, color, rect, square, border, radius, action, image_file, text=' ', text_color=(0, 0, 0)):
+        super().__init__(color, rect, square, border, radius, action, text, text_color)
         self.image = pygame.image.load(image_file).convert_alpha() if image_file != "" else None
 
     def scale(self, screen_size):
@@ -142,10 +207,10 @@ class ImageButton(RectTextButton):
 
 
 class NotificationMessage(RectTextObject):
-    def __init__(self, color, rect, text, text_color):
+    def __init__(self, color, rect, square, text, text_color):
         self.border = 0
         self.radius = 8
-        super().__init__(color, rect, self.border, self.radius, text, text_color)
+        super().__init__(color, rect, square, self.border, self.radius, text, text_color)
 
         self.life = 300
 
@@ -176,7 +241,7 @@ class PromotionButton(ImageButton):
     def __init__(self, color, rect, border, radius, action, piece, piece_images):
         self.piece_color = "w"
         self.piece = piece
-        super().__init__(color, rect, border, radius, action, "", ' ', (0, 0, 0, 0))
+        super().__init__(color, rect, True, border, radius, action, "", ' ', (0, 0, 0, 0))
 
         self.chosen = False
         self.image = piece_images[0][PIECE_MATCHER.index(self.piece.upper())]
@@ -216,8 +281,8 @@ class PromotionButton(ImageButton):
 
 
 class Clock(RectTextObject):
-    def __init__(self, color, rect, border, radius, text='', text_color=(0, 0, 0)):
-        super().__init__(color, rect, border, radius, text, text_color)
+    def __init__(self, color, rect, square, border, radius, text='', text_color=(0, 0, 0)):
+        super().__init__(color, rect, square, border, radius, text, text_color)
         self.time = 0
 
     def scale(self, screen_size):
@@ -256,10 +321,10 @@ class Clock(RectTextObject):
         super().draw(surface, selected)
 
 
-class Board(SquareObject):
+class Board(Object):
     def __init__(self, colors, rect):
 
-        super().__init__(rect)
+        super().__init__(rect, True)
 
         self.board_colors = colors
 
@@ -277,9 +342,9 @@ class Board(SquareObject):
                                   self.sq_size, self.sq_size))
 
 
-class Piece(pygame.sprite.Sprite, SquareObject):
+class Piece(pygame.sprite.Sprite, Object):
     def __init__(self, rect, row, col, side, piece, piece_images):
-        SquareObject.__init__(self, rect)
+        Object.__init__(self, rect, True)
         pygame.sprite.Sprite.__init__(self)
 
         self.width = int(self.width)
@@ -292,6 +357,7 @@ class Piece(pygame.sprite.Sprite, SquareObject):
 
         self.row = row
         self.col = col
+        self.perspective = WHITE_COLOR
 
         self.side = side
         self.color = "w" if side == 0 else "b"
@@ -313,7 +379,7 @@ class Piece(pygame.sprite.Sprite, SquareObject):
         self.new_starting_square_location = (0, 0)
 
     def scale(self, screen_size):
-        SquareObject.scale(self, screen_size)
+        Object.scale(self, screen_size)
 
         # Replicate the starting square position to find the new location respective to the board
         new_starting_square_size = (min(screen_size[0] / self.starting_square_ratio[2],
@@ -332,8 +398,8 @@ class Piece(pygame.sprite.Sprite, SquareObject):
         self.width = int(self.width)
         self.height = int(self.height)
 
-        self.x = self.new_starting_square_location[0] + self.col * self.width
-        self.y = self.new_starting_square_location[1] + self.row * self.height
+        self.x = self.new_starting_square_location[0] + abs(self.col - 7 * self.perspective) * self.width
+        self.y = self.new_starting_square_location[1] + abs(self.row - 7 * self.perspective) * self.height
 
         self.image = pygame.Surface((self.width, self.height), pygame.SRCALPHA).convert_alpha()
 
@@ -346,12 +412,20 @@ class Piece(pygame.sprite.Sprite, SquareObject):
 
         self.image.blit(self.sprite, (0, 0))
 
+    def set_perspective(self, perspective):
+        self.perspective = perspective
+        self.x = self.new_starting_square_location[0] + abs(self.col - 7 * self.perspective) * self.width
+        self.y = self.new_starting_square_location[1] + abs(self.row - 7 * self.perspective) * self.height
+
+        self.rect = self.image.get_rect()
+        self.rect.topleft = [self.x, self.y]
+
     def move(self, new_col, new_row):
         self.col = new_col
         self.row = new_row
 
-        self.x = self.new_starting_square_location[0] + self.col * self.width
-        self.y = self.new_starting_square_location[1] + self.row * self.height
+        self.x = self.new_starting_square_location[0] + abs(self.col - 7 * self.perspective) * self.width
+        self.y = self.new_starting_square_location[1] + abs(self.row - 7 * self.perspective) * self.height
 
         self.image = pygame.Surface((self.width, self.height), pygame.SRCALPHA).convert_alpha()
 
@@ -367,7 +441,7 @@ class Piece(pygame.sprite.Sprite, SquareObject):
 
 class EvalBar(RectObject):
     def __init__(self, color, rect, border, radius):
-        super().__init__(color, rect, border, radius)
+        super().__init__(color, rect, False, border, radius)
         self.evaluation = 0
         self.evaluation_type = "cp"
         self.previous_evaluation = 0
