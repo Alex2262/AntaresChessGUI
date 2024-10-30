@@ -446,6 +446,7 @@ class EvalBar(RectObject):
         self.evaluation_type = "cp"
         self.previous_evaluation = 0
         self.max_scale = 600
+        self.flipped = False
 
         # self.elapsed = 60
         # self.scaling_time = 60
@@ -470,16 +471,19 @@ class EvalBar(RectObject):
             else:
                 white = black
 
-        pygame.draw.rect(surface, black,
+        our = black if self.flipped else white
+        opp = white if self.flipped else black
+
+        pygame.draw.rect(surface, opp,
                          (self.x, self.y, self.width, self.height // 2), self.border, self.radius)
 
-        pygame.draw.rect(surface, black,
+        pygame.draw.rect(surface, opp,
                          (self.x, middle - self.height // 8, self.width, self.height // 8), 0, 0)
 
-        pygame.draw.rect(surface, white,
+        pygame.draw.rect(surface, our,
                          (self.x, middle, self.width, self.height // 2), self.border, self.radius)
 
-        pygame.draw.rect(surface, white,
+        pygame.draw.rect(surface, our,
                          (self.x, middle, self.width, self.height // 8), 0, 0)
 
         if self.evaluation_type != "cp":
@@ -499,6 +503,9 @@ class EvalBar(RectObject):
 
         evaluation_bar_x = self.x
         evaluation_bar_y = middle - evaluation_bar_color_height if self.evaluation >= 0 else middle
+
+        if self.flipped:
+            evaluation_bar_y = middle if self.evaluation >= 0 else middle - evaluation_bar_color_height
 
         # print((evaluation_bar_x, evaluation_bar_y, evaluation_bar_color_width, evaluation_bar_color_height))
         pygame.draw.rect(surface, evaluation_bar_color,

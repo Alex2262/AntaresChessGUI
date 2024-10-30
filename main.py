@@ -23,7 +23,7 @@ def main():
 
     screen.fill(SCREEN_COLOR)
 
-    pygame.display.set_caption("Chess")
+    pygame.display.set_caption("Altair Chess GUI")
 
     main_state = GameState()
     new_mode = 0
@@ -78,7 +78,7 @@ def main_menu(screen, main_state):
         RectObject(LAYER3_COLOR, (774, 134, 192, 30), False, 0, DEFAULT_RECT_RADIUS),
         RectTextObject(LAYER3_COLOR, (774, 134, 116, 30), False, 0, DEFAULT_RECT_RADIUS, "Analysis: ", TEXT_COLOR),
         RectTextObject(LAYER4_COLOR, (774, 488, 50, 18), False, 0, DEFAULT_RECT_RADIUS, "Lines", TEXT_COLOR),
-        RectTextObject(LAYER4_COLOR, (872, 488, 50, 18), False, 0, DEFAULT_RECT_RADIUS, "CPU: 0", TEXT_COLOR),
+        RectTextObject(LAYER4_COLOR, (872, 488, 50, 18), False, 0, DEFAULT_RECT_RADIUS, "CPU: 1", TEXT_COLOR),
     ]
 
     board_gui = Board(CHESS_BOARD_COLOR, (STARTING_SQ[0], STARTING_SQ[1], 480, 480))
@@ -90,7 +90,7 @@ def main_menu(screen, main_state):
     engine_files = os.listdir(FILE_PATH + "engines/")
 
     engine_files = [FILE_PATH + "engines/" + x for x in engine_files]
-    engine_file = FILE_PATH + "engines/Altair607"  # engine_files[0]
+    engine_file = FILE_PATH + "engines/Altair700"  # engine_files[0]
 
     if PLATFORM == "Windows":
         engine_file = FILE_PATH + "engines/Altair3.0.0_windows_64.exe"
@@ -295,6 +295,8 @@ def main_menu(screen, main_state):
                         elif action[1] == "flip":
                             main_state.perspective ^= 1
                             main_state.set_perspectives()
+
+                            eval_bar.flipped = main_state.perspective
 
         mouse_pos = pygame.mouse.get_pos()
 
