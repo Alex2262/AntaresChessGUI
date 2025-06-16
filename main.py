@@ -8,6 +8,7 @@ import threading
 import math
 import pyperclip
 import re
+import os
 
 from objects import *
 from move import *
@@ -47,6 +48,8 @@ def main_menu(screen, main_state):
 
     mode = 0
 
+    max_threads = os.cpu_count()
+
     buttons = [
         RectTextButton(BUTTON1_COLOR, (770, 30, 200, 40), False, 0, DEFAULT_RECT_RADIUS, "menu:1", 'Game Options',
                        BUTTON_TEXT_COLOR),
@@ -69,6 +72,7 @@ def main_menu(screen, main_state):
     ]
 
     eval_bar = EvalBar(LAYER2_COLOR, (20, 20, 40, 500), 0, DEFAULT_RECT_RADIUS)
+    thread_count_display = RectTextObject(LAYER4_COLOR, (872, 488, 50, 18), False, 0, DEFAULT_RECT_RADIUS, "CPU: 1", TEXT_COLOR)
     basic_objects = [
         eval_bar,
         RectObject(LAYER2_COLOR, (80, 20, 500, 500), False, 0, DEFAULT_RECT_RADIUS),
@@ -78,7 +82,7 @@ def main_menu(screen, main_state):
         RectObject(LAYER3_COLOR, (774, 134, 192, 30), False, 0, DEFAULT_RECT_RADIUS),
         RectTextObject(LAYER3_COLOR, (774, 134, 116, 30), False, 0, DEFAULT_RECT_RADIUS, "Analysis: ", TEXT_COLOR),
         RectTextObject(LAYER4_COLOR, (774, 488, 50, 18), False, 0, DEFAULT_RECT_RADIUS, "Lines", TEXT_COLOR),
-        RectTextObject(LAYER4_COLOR, (872, 488, 50, 18), False, 0, DEFAULT_RECT_RADIUS, "CPU: 1", TEXT_COLOR),
+        thread_count_display,
     ]
 
     board_gui = Board(CHESS_BOARD_COLOR, (STARTING_SQ[0], STARTING_SQ[1], 480, 480))
@@ -90,7 +94,7 @@ def main_menu(screen, main_state):
     engine_files = os.listdir(FILE_PATH + "engines/")
 
     engine_files = [FILE_PATH + "engines/" + x for x in engine_files]
-    engine_file = FILE_PATH + "engines/Altair700"  # engine_files[0]
+    engine_file = FILE_PATH + "engines/Altair715"  # engine_files[0]
 
     if PLATFORM == "Windows":
         engine_file = FILE_PATH + "engines/Altair3.0.0_windows_64.exe"
@@ -269,8 +273,21 @@ def main_menu(screen, main_state):
                                 engine.set_multi_pv(engine.options["multi_pv"] + 1)
                             elif action[2] == "-":
                                 engine.set_multi_pv(engine.options["multi_pv"] - 1)
-                        if action[2] == "cpu":
-                            pass
+
+                        elif action[1] == "cpu":
+                            if action[2] == "+":
+                                if engine.options["threads"] == max_threads:
+                                    print("Max Threads")
+                                else:
+                                    engine.set_thread_count(engine.options["threads"] + 1)
+                            elif action[2] == "-":
+                                if engine.options["threads"] == 1:
+                                    print("Min Threads")
+                                else:
+                                    engine.set_thread_count(engine.options["threads"] - 1)
+
+                            thread_count_display.text = "CPU: " + str(engine.options["threads"])
+                            thread_count_display.update_text()
 
                     elif action[0] == "position":
                         if action[1] == "undo":

@@ -57,10 +57,23 @@ class Engine:
         self.info["scores"] = [0] * new_multi_pv
         self.info["score_types"] = ["cp"] * new_multi_pv
 
-        self.set_options()
         if self.analysing:
             self.stop()
-            self.start_analysis()
+            self.start_analysis()  # will set options
+        else:
+            self.set_options()
+
+    def set_thread_count(self, new_thread_count):
+        new_thread_count = max(1, new_thread_count)
+
+        self.options["threads"] = new_thread_count
+        self.options["hash"] = 64 * new_thread_count
+
+        if self.analysing:
+            self.stop()
+            self.start_analysis()  # will set options
+        else:
+            self.set_options()
 
     def connect(self):
         self.engine_process = subprocess.Popen([self.engine_file], stdin=subprocess.PIPE, stdout=subprocess.PIPE,

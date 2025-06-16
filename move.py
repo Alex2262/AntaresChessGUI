@@ -16,36 +16,37 @@ from constants import *
 
 
 def encode_move(from_square, to_square, selected, occupied, move_type, promotion_piece, is_capture):
-    return from_square | to_square << 7 | selected << 14 | occupied << 18 | move_type << 22 | \
-        promotion_piece << 25 | is_capture << 29
+    return np.uint32(from_square) | np.uint32(to_square) << 7 | np.uint32(selected) << 14 | \
+           np.uint32(occupied) << 18 | np.uint32(move_type) << 22 | \
+           np.uint32(promotion_piece) << 25 | np.uint32(is_capture) << 29
 
 
 def get_from_square(move):
-    return move & 0x7f
+    return np.int32(move & 0x7f)
 
 
 def get_to_square(move):
-    return (move & 0x3f80) >> 7
+    return np.int32((move & 0x3f80) >> 7)
 
 
 def get_selected(move):
-    return (move & 0x3c000) >> 14
+    return np.int32((move & 0x3c000) >> 14)
 
 
 def get_occupied(move):
-    return (move & 0x3c0000) >> 18
+    return np.int32((move & 0x3c0000) >> 18)
 
 
 def get_move_type(move):
-    return (move & 0x1c00000) >> 22
+    return np.int32((move & 0x1c00000) >> 22)
 
 
 def get_promotion_piece(move):
-    return (move & 0x1e000000) >> 25
+    return np.int32((move & 0x1e000000) >> 25)
 
 
 def get_is_capture(move):
-    return (move & 0x20000000) >> 29
+    return np.int32((move & 0x20000000) >> 29)
 
 
 def get_uci_from_move(move):
@@ -122,7 +123,7 @@ def get_move_from_uci(position, uci):
             move_type = 2
 
     is_capture = 1 if occupied < EMPTY else 0
-    move = encode_move(from_square, to_square, selected, occupied, move_type, promotion_piece, is_capture)
+    move = encode_move(from_square, to_square, selected, occupied, np.uint8(move_type), np.uint8(promotion_piece), np.uint8(is_capture))
 
     return move
 
